@@ -23,7 +23,7 @@ rm -rf wordpress latest.zip
 mv wp-config-sample.php wp-config.php
 
 # Configure wp-config.php
-sed -i "s/database_name_here/datanasevasu/" wp-config.php
+sed -i "s/database_name_here/databasevasu/" wp-config.php
 sed -i "s/username_here/admin/" wp-config.php
 sed -i "s/password_here/admin123/" wp-config.php
 sed -i "s/localhost/databasevasu.c1s8aie4ou22.us-east-1.rds.amazonaws.com/" wp-config.php
