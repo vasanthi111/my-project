@@ -1,48 +1,32 @@
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
-sudo usermod -aG docker ec2-user
-sudo chmod 666 /var/run/docker.sock
-sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-systemctl start docker
-# Create docker-compose.yml file
-cat > /home/ec2-user/docker-compose.yml <<EOL
-version: '3.3'
-services:
-  db:
-    image: mysql:8.0.19
-    command: --default-authentication-plugin=mysql_native_password
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=wordpress
-      - MYSQL_DATABASE=databaseword
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=admin123
+#!/bin/bash
+# Update system packages
+sudo yum update -y
 
-  wordpress:
-    image: wordpress:latest
-    ports:
-      - "80:80"
-    restart: always
-    environment:
-      - WORDPRESS_DB_HOST=db
-      - WORDPRESS_DB_USER=admin
-      - WORDPRESS_DB_PASSWORD=admin123
-      - WORDPRESS_DB_NAME=databaseword
+# Install Apache and start the service
+sudo yum install -y httpd
+sudo systemctl start httpd
+sudo systemctl enable httpd
 
-volumes:
-  db_data:
-EOL
+# Install MySQL client
+sudo yum install -y mysql
 
-# Change permissions for the docker-compose file
-chmod 644 /home/ec2-user/docker-compose.yml
+# Install PHP and required extensions
+sudo amazon-linux-extras enable php7.2
+sudo yum install -y php php-mysqlnd
 
-# Run Docker Compose
-cd /home/ec2-user
-docker-compose up -d
+# Download and configure WordPress
+cd /var/www/html
+wget https://wordpress.org/latest.zip
+unzip latest.zip
+mv wordpress/* .
+rm -rf wordpress latest.zip
+mv wp-config-sample.php wp-config.php
 
-# Optional: Check if containers are running
-docker ps
+# Configure wp-config.php
+sed -i "s/database_name_here/datanasevasu/" wp-config.php
+sed -i "s/username_here/admin/" wp-config.php
+sed -i "s/password_here/admin123/" wp-config.php
+sed -i "s/localhost/databasevasu.c1s8aie4ou22.us-east-1.rds.amazonaws.com/" wp-config.php
+
+# Restart Apache to apply changes
+sudo systemctl restart httpd
